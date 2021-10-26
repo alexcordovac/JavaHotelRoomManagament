@@ -1,5 +1,5 @@
 # JavaHotelRoomManagament
-Beutiful UI program to management of a small hotel business rooms availability using Java Swing.
+Beautiful UI program to management of a small hotel business rooms availability using Java Swing.
 **Image of main window into "images" folder.**
 
 ## Libs
