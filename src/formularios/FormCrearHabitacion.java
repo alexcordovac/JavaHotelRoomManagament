@@ -7,7 +7,7 @@ package formularios;
 
 import controladores.ControladorHabitaciones;
 import dao.DAOHabitacion;
-import java.awt.Color;
+import formularios.componentes.JPanelArrastrable;
 import javax.swing.JOptionPane;
 import jiconfont.swing.IconFontSwing;
 import modelos.Habitacion;

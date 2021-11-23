@@ -5,7 +5,7 @@
  */
 package alertas;
 
-import formularios.JPanelArrastrable;
+import formularios.componentes.JPanelArrastrable;
 import java.util.TimerTask;
 import java.util.Timer;
 import utiles.Conexion;

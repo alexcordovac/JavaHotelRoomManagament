@@ -52,6 +52,7 @@ public class DAOReservacion {
             }
             stm.close();
             rs.close();
+            co.close();
             Conexion.desconectar();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error: Clase DAOReservacion/obtenerHabitaciones");
@@ -75,6 +76,7 @@ public class DAOReservacion {
             int filas = stm.executeUpdate();
             System.out.println("Reservacion agregada. Filas afectadas: "+filas);
             stm.close();
+            con.close();
             Conexion.desconectar();
             return true;
         } catch (SQLException e) {
@@ -131,6 +133,7 @@ public class DAOReservacion {
             st = con.createStatement();
             int filas = st.executeUpdate(sql);
             st.close();
+            con.close();
             Conexion.desconectar();
             System.out.println("La reservacion ha sido actualizada. Filas afectadas: "+filas);
             return true;

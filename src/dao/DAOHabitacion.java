@@ -36,6 +36,7 @@ public class DAOHabitacion {
             int filas = stm.executeUpdate();
             System.out.println("Habitación agregada. Filas afectadas: "+filas);
             stm.close();
+            con.close();
             Conexion.desconectar();
             return true;
         } catch (SQLException e) {
@@ -69,6 +70,7 @@ public class DAOHabitacion {
             }
             stm.close();
             rs.close();
+            co.close();
             Conexion.desconectar();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error: Clase DAOHabitacion/obtenerHabitaciones");
@@ -78,16 +80,17 @@ public class DAOHabitacion {
     }
     
     public boolean actualizarEstatus(int id, String estado) {
-        Connection connect;
+        Connection con;
         Statement stm;
         
         String sql="UPDATE habitaciones SET estatus ='"+estado+"' WHERE id_habitacion="+id;
         try {
-            connect = Conexion.conectar();
-            stm = connect.createStatement();
+            con = Conexion.conectar();
+            stm = con.createStatement();
             int filas = stm.executeUpdate(sql);
             System.out.println("Se actualizó el estado de la habitacion con ID: "+id+"\nFilas afectadas: "+filas);
             Conexion.desconectar();
+            con.close();
             return true;
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error: Clase DAOHabitacion/actualizarEstatus");

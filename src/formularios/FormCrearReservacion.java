@@ -9,6 +9,7 @@ import controladores.ControladorHabitaciones;
 import controladores.ControladorReservaciones;
 import dao.DAOHabitacion;
 import dao.DAOReservacion;
+import formularios.componentes.JPanelArrastrable;
 import java.awt.Color;
 import java.awt.Font;
 import java.time.Duration;

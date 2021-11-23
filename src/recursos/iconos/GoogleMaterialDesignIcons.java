@@ -946,7 +946,9 @@ public enum GoogleMaterialDesignIcons implements IconCode {
   YOUTUBE_SEARCHED_FOR('\uE8FA'),
   ZOOM_IN('\uE8FF'),
   ZOOM_OUT('\uE900'),
-  ZOOM_OUT_MAP('\uE56B');
+  ZOOM_OUT_MAP('\uE56B'), 
+  WAREHOUSE('\uEBB8'), 
+  DOOR_FRONT('\uEFFD');
 
   private final char character;
 

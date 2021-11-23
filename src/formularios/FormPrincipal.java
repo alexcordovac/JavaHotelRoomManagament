@@ -5,23 +5,23 @@
  */
 package formularios;
 
-import controladores.ControladorHabitaciones;
-import controladores.ControladorReservaciones;
+import controladores.ControladorMenu;
+import formularios.componentes.JPanelArrastrable;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.Box;
-import javax.swing.JFrame;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import jiconfont.swing.IconFontSwing;
-import modelos.Habitacion;
-import modelos.Reservacion;
 import recursos.iconos.GoogleMaterialDesignIcons;
 import utiles.Conexion;
 import utiles.Constantes;
@@ -32,19 +32,31 @@ import utiles.Constantes;
  */
 public class FormPrincipal extends javax.swing.JFrame {
 
-    List<Habitacion> listaHabitaciones = new ArrayList<>();
-    List<Reservacion> listaReservaciones = new ArrayList<>();
-    DefaultTableModel modelTablaReservaciones;
+    private BufferedImage img = null;
 
     /**
      * Creates new form formPrincipal
      */
     public FormPrincipal() {
+        //Configuraciones a la ventana principal
         setupFormPrincipal();
+        
+        //Cargamos el logo antes de pintarlo (se pinta en el panelCuerpo)
+        cargarLogo();
         initComponents();
+        
+        //Pintar iconos
         pintarIconos();
-        setLocationRelativeTo(null);
-        setupTablaReservaciones();
+    }
+
+    /*Cargar imagen logo de fondo*/
+    private void cargarLogo() {
+        try {
+            img = ImageIO.read(getClass().getResource("/recursos/imagenes/DCEIT_LOGO.png"));
+        } catch (IOException e) {
+            System.err.println("ERROR AL CARGAR IMAGEN");
+            e.printStackTrace();
+        }
     }
 
     /*Método para color iconos en la ventana principal*/
@@ -57,11 +69,6 @@ public class FormPrincipal extends javax.swing.JFrame {
         lblUsuarioIcon.setIcon(IconFontSwing.buildIcon(GoogleMaterialDesignIcons.ACCOUNT_CIRCLE, 20, Constantes.COLOR_BLANCO));
         lblNotificacionIcon.setIcon(IconFontSwing.buildIcon(GoogleMaterialDesignIcons.NOTIFICATIONS, 20, Constantes.COLOR_BLANCO));
         lblCorazonIcon.setIcon(IconFontSwing.buildIcon(GoogleMaterialDesignIcons.FAVORITE, 20, Constantes.COLOR_BLANCO));
-
-        //Accesos rápidos
-        lblNuevaReservacionIcono.setIcon(IconFontSwing.buildIcon(GoogleMaterialDesignIcons.ADD_CIRCLE, 30, new Color(95, 95, 95)));
-        lblNuevaHabitacion.setIcon(IconFontSwing.buildIcon(GoogleMaterialDesignIcons.WEEKEND, 30, new Color(95, 95, 95)));
-
     }
 
     /*Método para configurar la ventana principal*/
@@ -87,81 +94,13 @@ public class FormPrincipal extends javax.swing.JFrame {
         });
     }
 
-    /*Método que carga los registros de habitaciones en el Jpanel*/
-    public void cargarPanelHabitaciones() {
-
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                panelHabitacionesItems.removeAll();
-                panelHabitacionesItems.add(Box.createRigidArea(new Dimension(5, 15)));
-                for (Habitacion habitacion : listaHabitaciones) {
-                    FormHabitacionesItems formHabitacionesItems = new FormHabitacionesItems(habitacion);
-                    panelHabitacionesItems.add(formHabitacionesItems);
-                    panelHabitacionesItems.add(Box.createRigidArea(new Dimension(5, 15)));
-                }
-                panelHabitacionesItems.revalidate();
-            }
-        });
-        t1.start();
+    /*GETTER Y SETTERS*/
+    public JPanel getPanelCuerpo() {
+        return panelCuerpo;
     }
 
-    public void cargarTablaReservaciones() {
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                modelTablaReservaciones.setRowCount(0);
-                for (Reservacion reservacion : listaReservaciones) {
-                    Object[] registro = {reservacion.getId_reservacion(), reservacion.getFecha_entrada().toString().replaceAll("T", " "),
-                        reservacion.getFecha_salida().toString().replaceAll("T", " "), reservacion.getDias(), reservacion.getId_habitacion()};
-                    modelTablaReservaciones.addRow(registro);
-                }
-            }
-        });
-        t1.start();
-    }
-
-    /*Método para crear el modelo de la tabla*/
-    private void setupTablaReservaciones() {
-        modelTablaReservaciones = new DefaultTableModel(new String[]{"Id", "Fecha entrada",
-            "Fecha salida", "Dias", "Id\nHabitacion"}, 40) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                //all cells false
-                return false;
-            }
-        };
-
-        //Encabezado
-        tablaReservaciones.setModel(modelTablaReservaciones);
-
-        //Ancho de algunas columnas
-        tablaReservaciones.getColumnModel().getColumn(0).setMinWidth(50);
-        tablaReservaciones.getColumnModel().getColumn(3).setMinWidth(60);
-        tablaReservaciones.getColumnModel().getColumn(4).setMinWidth(10);
-
-        //Altura de las filas
-        tablaReservaciones.setRowHeight(30);
-
-        //Ajustar contenido
-        tablaReservaciones.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-    }
-
-    /*Getter y Setters*/
-    public List<Habitacion> getListaHabitaciones() {
-        return listaHabitaciones;
-    }
-
-    public void setListaHabitaciones(List<Habitacion> listaHabitaciones) {
-        this.listaHabitaciones = listaHabitaciones;
-    }
-
-    public List<Reservacion> getListaReservaciones() {
-        return listaReservaciones;
-    }
-
-    public void setListaReservaciones(List<Reservacion> listaReservaciones) {
-        this.listaReservaciones = listaReservaciones;
+    public JPanel getPanelMenus() {
+        return panelMenus;
     }
 
     /**
@@ -181,20 +120,16 @@ public class FormPrincipal extends javax.swing.JFrame {
         lblUsuarioIcon = new javax.swing.JLabel();
         lblNotificacionIcon = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        panelNuevaReservacion = new javax.swing.JPanel();
-        lblNuevaReservacionIcono = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        panelNuevaHabitacion = new javax.swing.JPanel();
-        lblNuevaHabitacion = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        panelHabitacionesItems = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tablaReservaciones = new javax.swing.JTable();
+        panelMenus = new javax.swing.JPanel();
+        panelCuerpo = new javax.swing.JPanel(){
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int x = (this.getWidth() - img.getWidth(null)) / 2;
+                int y = (this.getHeight() - img.getHeight(null)) / 2;
+                g.drawImage(img, x, y, 345, 170, this);
+            }
+        };
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -223,7 +158,7 @@ public class FormPrincipal extends javax.swing.JFrame {
                 .addComponent(lblSistemaIco, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lblSistemaNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 394, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 294, Short.MAX_VALUE)
                 .addComponent(lblCorazonIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(lblNotificacionIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -249,158 +184,20 @@ public class FormPrincipal extends javax.swing.JFrame {
 
         getContentPane().add(panelToolBar, java.awt.BorderLayout.PAGE_START);
 
-        jPanel1.setBackground(new java.awt.Color(250, 250, 250));
-        jPanel1.setPreferredSize(new java.awt.Dimension(450, 450));
+        jPanel1.setBackground(Constantes.COLOR_PRIMARIO);
+        jPanel1.setPreferredSize(new java.awt.Dimension(150, 450));
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        jPanel2.setBackground(new java.awt.Color(230, 230, 230));
-
-        panelNuevaReservacion.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 80, 80));
-            }
-        });
-        panelNuevaReservacion.setBackground(new Color(240,240,240));
-        panelNuevaReservacion.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                panelNuevaReservacionMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                panelNuevaReservacionMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                panelNuevaReservacionMouseExited(evt);
-            }
-        });
-        panelNuevaReservacion.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lblNuevaReservacionIcono.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        panelNuevaReservacion.add(lblNuevaReservacionIcono, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 60, 40));
-
-        jLabel2.setForeground(new java.awt.Color(87, 87, 87));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel2.setText("Nueva reservación");
-        panelNuevaReservacion.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 10, 120, 20));
-
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
-        jLabel1.setText("Accesos rápidos");
-
-        panelNuevaReservacion.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 80, 80));
-            }
-        });
-        panelNuevaHabitacion.setBackground(new Color(240,240,240));
-        panelNuevaHabitacion.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                panelNuevaHabitacionMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                panelNuevaHabitacionMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                panelNuevaHabitacionMouseExited(evt);
-            }
-        });
-        panelNuevaHabitacion.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lblNuevaHabitacion.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        panelNuevaHabitacion.add(lblNuevaHabitacion, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 60, 40));
-
-        jLabel3.setForeground(new java.awt.Color(87, 87, 87));
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel3.setText("Nueva habitacion");
-        panelNuevaHabitacion.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 10, 120, 20));
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(panelNuevaReservacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(panelNuevaHabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(68, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelNuevaReservacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(panelNuevaHabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(29, 29, 29))
-        );
-
-        jPanel1.add(jPanel2, java.awt.BorderLayout.PAGE_START);
-
-        jPanel5.setBackground(new java.awt.Color(250, 250, 250));
-
-        jScrollPane1.setBackground(null);
-        jScrollPane1.getViewport().setBackground(new Color(250,250,250));
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        panelHabitacionesItems.setBackground(new java.awt.Color(250, 250, 250));
-        panelHabitacionesItems.setLayout(new javax.swing.BoxLayout(panelHabitacionesItems, javax.swing.BoxLayout.Y_AXIS));
-        jScrollPane1.setViewportView(panelHabitacionesItems);
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
-        );
-
-        jPanel1.add(jPanel5, java.awt.BorderLayout.CENTER);
+        panelMenus.setBorder(javax.swing.BorderFactory.createEmptyBorder(30, 0, 0, 0));
+        panelMenus.setOpaque(false);
+        panelMenus.setLayout(new javax.swing.BoxLayout(panelMenus, javax.swing.BoxLayout.Y_AXIS));
+        jPanel1.add(panelMenus, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.LINE_START);
 
-        jPanel4.setBackground(new java.awt.Color(230, 230, 230));
-
-        jScrollPane2.getViewport().setBackground(Constantes.COLOR_GRIS);
-        jScrollPane2.setBorder(null);
-
-        tablaReservaciones.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        tablaReservaciones.setSelectionBackground(Constantes.COLOR_PRIMARIO);
-        jScrollPane2.setViewportView(tablaReservaciones);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-        );
-
-        getContentPane().add(jPanel4, java.awt.BorderLayout.CENTER);
+        panelCuerpo.setBackground(Constantes.COLOR_BLANCO);
+        panelCuerpo.setLayout(new java.awt.CardLayout());
+        getContentPane().add(panelCuerpo, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -408,32 +205,6 @@ public class FormPrincipal extends javax.swing.JFrame {
     private void lblIconSalirMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblIconSalirMouseClicked
         System.exit(0);
     }//GEN-LAST:event_lblIconSalirMouseClicked
-
-    private void panelNuevaReservacionMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaReservacionMouseEntered
-        panelNuevaReservacion.setBackground(new Color(245, 245, 245));
-    }//GEN-LAST:event_panelNuevaReservacionMouseEntered
-
-    private void panelNuevaReservacionMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaReservacionMouseExited
-        panelNuevaReservacion.setBackground(new Color(240, 240, 240));
-    }//GEN-LAST:event_panelNuevaReservacionMouseExited
-
-    private void panelNuevaReservacionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaReservacionMouseClicked
-        JFrame frame = this;
-        new FormCrearReservacion(frame, true).show();
-    }//GEN-LAST:event_panelNuevaReservacionMouseClicked
-
-    private void panelNuevaHabitacionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaHabitacionMouseClicked
-        JFrame frame = this;
-        new FormCrearHabitacion(frame, true).show();
-    }//GEN-LAST:event_panelNuevaHabitacionMouseClicked
-
-    private void panelNuevaHabitacionMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaHabitacionMouseEntered
-        panelNuevaHabitacion.setBackground(new Color(245, 245, 245));
-    }//GEN-LAST:event_panelNuevaHabitacionMouseEntered
-
-    private void panelNuevaHabitacionMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelNuevaHabitacionMouseExited
-        panelNuevaHabitacion.setBackground(new Color(240, 240, 240));
-    }//GEN-LAST:event_panelNuevaHabitacionMouseExited
 
     /**
      * @param args the command line arguments
@@ -469,47 +240,41 @@ public class FormPrincipal extends javax.swing.JFrame {
                 //Mostrar ventana principal
                 FormPrincipal formPrincipal = new FormPrincipal();
                 formPrincipal.setVisible(true);
+                formPrincipal.setLocationRelativeTo(null);
 
                 /*Inicializar conexion a la DB, inicializar controladores*/
-                new Thread(new Runnable() {
+                Thread thCon = new Thread(new Runnable() {
                     @Override
                     public void run() {
+
                         Conexion a = new Conexion();
                         a.inicializarProps();
-                        ControladorReservaciones ctrlReservaciones = new ControladorReservaciones(formPrincipal);
-                        ControladorHabitaciones ctrlHabitaciones = new ControladorHabitaciones(formPrincipal);
-                    }
-                }).start();
+                        
+                        SwingUtilities.invokeLater(() -> {
+                            ControladorMenu ctrlMenu = new ControladorMenu(formPrincipal);
+                        });
+                        
 
-                //Ajustar al tamaño máximo de la pantalla
-                //formPrincipal.setExtendedState(formPrincipal.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+                    }
+                });
+                thCon.setName("Thread-inMain");
+                thCon.start();
+                
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblCorazonIcon;
     private javax.swing.JLabel lblIconSalir;
     private javax.swing.JLabel lblNotificacionIcon;
-    private javax.swing.JLabel lblNuevaHabitacion;
-    private javax.swing.JLabel lblNuevaReservacionIcono;
     private javax.swing.JLabel lblSistemaIco;
     private javax.swing.JLabel lblSistemaNombre;
     private javax.swing.JLabel lblUsuarioIcon;
-    private javax.swing.JPanel panelHabitacionesItems;
-    private javax.swing.JPanel panelNuevaHabitacion;
-    private javax.swing.JPanel panelNuevaReservacion;
+    private javax.swing.JPanel panelCuerpo;
+    private javax.swing.JPanel panelMenus;
     private javax.swing.JPanel panelToolBar;
-    private javax.swing.JTable tablaReservaciones;
     // End of variables declaration//GEN-END:variables
 
 }
