@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utiles;
+package conexion;
 
 import alertas.SolicitarDBProps;
 import java.io.File;
@@ -15,7 +15,7 @@ import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javax.swing.JOptionPane;
+import utiles.Constantes;
 
 /**
  *
@@ -25,8 +25,8 @@ public class Conexion {
 
     public static Connection con;
     public static ConexionProps propiedades;
-    private String dirActual = System.getProperty("user.dir");
-    private String nombreArchivo = "dbprops.dat";
+    private final String dirActual = System.getProperty("user.dir");
+    private final String nombreArchivo = "dbprops.dat";
     SolicitarDBProps soli = new SolicitarDBProps(null, true);
 
     public Conexion() {
@@ -40,19 +40,19 @@ public class Conexion {
         try {
             con = DriverManager.getConnection(url);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "No se pudo conectar a la base de datos");
-            System.err.print(e.getMessage());
+            System.err.println("Error al conectar a la base de datos");
         }
         return con;
     }
 
+    /*Función para desconectarse de la base de datos*/
     public static boolean desconectar() {
         if (con != null) {
             try {
                 con.close();
                 return true;
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "No se pudo cerrar la conexion" + ex.getMessage());
+                System.err.println("No se pudo cerrar la conexion a la base de datos");
             }
         }
         return false;
@@ -71,7 +71,7 @@ public class Conexion {
             file.close();
 
         } catch (IOException ex) {
-            System.out.println("IOException en serializarProps: "+ex.getMessage());
+            System.err.println("IOException en serializarProps: " + ex.getMessage());
         }
 
     }
@@ -97,27 +97,38 @@ public class Conexion {
             file.close();
 
         } catch (IOException ex) {
-            System.out.println("IOException is caughten deserealizarProps: "+ex.getMessage());
+            System.err.println("IOException en deserealizarProps: " + ex.getMessage());
+            ex.printStackTrace();
         } catch (ClassNotFoundException ex) {
-            System.out.println("ClassNotFoundException en deserealizarProps: "+ex.getMessage());
+            System.err.println("ClassNotFoundException en deserealizarProps: " + ex.getMessage());
+            ex.printStackTrace();
         }
         return conPropsTmp;
     }
 
     public void inicializarProps() {
         ConexionProps props = deserealizarProps();
-        if(props != null){
+        if (props != null) {
+
+            //Intentamos conectar ya con las props leidas
             propiedades = props;
             conectar();
+
             //Si la conexion sigue siendo null
-            if(con==null){
+            if (con == null) {
                 soli.getPropieades();
+
+                soli.jLabel1.setForeground(Constantes.COLOR_ERROR);
+                soli.jLabel1.setText("Error al iniciar la conexion");
                 soli.setVisible(true);
-            }else{
+            } else {
                 desconectar();
             }
-        }else{
+        } else {
+            soli.jLabel1.setForeground(Constantes.COLOR_OK);
+            soli.jLabel1.setText("Configurar conexion por primera vez");
             soli.setVisible(true);
+
         }
     }
 }

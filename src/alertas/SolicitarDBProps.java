@@ -8,8 +8,13 @@ package alertas;
 import formularios.componentes.JPanelArrastrable;
 import java.util.TimerTask;
 import java.util.Timer;
-import utiles.Conexion;
-import utiles.ConexionProps;
+import conexion.Conexion;
+import conexion.ConexionProps;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import utiles.Constantes;
 
 public class SolicitarDBProps extends javax.swing.JDialog {
@@ -17,7 +22,8 @@ public class SolicitarDBProps extends javax.swing.JDialog {
     Timer timer = null;
     TimerTask task;
     int i = 32;
-    Thread t1 = new Thread();
+    Thread t1;
+    javax.swing.Timer mensajeTimer;
 
     public SolicitarDBProps(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -34,6 +40,19 @@ public class SolicitarDBProps extends javax.swing.JDialog {
             inputPuerto.setText(Conexion.propiedades.getPuerto());
             inputDB.setText(Conexion.propiedades.getDb());
         }
+    }
+    
+    private void notificar(String mensaje, Color color){
+        jLabel1.setText("");
+        jLabel1.setForeground(color);
+        mensajeTimer = new javax.swing.Timer(500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                jLabel1.setText(mensaje);
+            }
+        });
+        mensajeTimer.start();
     }
 
     /**
@@ -58,6 +77,7 @@ public class SolicitarDBProps extends javax.swing.JDialog {
         inputPuerto = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         inputDB = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
@@ -109,6 +129,7 @@ public class SolicitarDBProps extends javax.swing.JDialog {
 
         jLabel4.setText("Contraseña:");
 
+        inputContrasena.setText("root");
         inputContrasena.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
         inputContrasena.setPreferredSize(new java.awt.Dimension(72, 20));
 
@@ -124,6 +145,8 @@ public class SolicitarDBProps extends javax.swing.JDialog {
         inputDB.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 0)));
         inputDB.setPreferredSize(new java.awt.Dimension(72, 20));
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -135,15 +158,16 @@ public class SolicitarDBProps extends javax.swing.JDialog {
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel6)
-                    .addComponent(inputDB, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(inputDB, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                     .addComponent(jLabel5)
-                    .addComponent(inputPuerto, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(inputPuerto, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                     .addComponent(jLabel4)
-                    .addComponent(inputContrasena, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(inputContrasena, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                     .addComponent(jLabel3)
-                    .addComponent(inputUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(inputUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(71, 71, 71))
         );
         jPanel1Layout.setVerticalGroup(
@@ -167,7 +191,9 @@ public class SolicitarDBProps extends javax.swing.JDialog {
                 .addComponent(jLabel6)
                 .addGap(6, 6, 6)
                 .addComponent(inputDB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -225,6 +251,7 @@ public class SolicitarDBProps extends javax.swing.JDialog {
     }//GEN-LAST:event_materialButton1ActionPerformed
 
     private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalirActionPerformed
+        this.Cerrar();
         System.exit(0);
     }//GEN-LAST:event_btnSalirActionPerformed
 
@@ -233,22 +260,51 @@ public class SolicitarDBProps extends javax.swing.JDialog {
                 || inputDB.getText().isEmpty()) {
             return;
         }
-        
+        btnGuardar.setEnabled(false);
+        notificar("Conectando...", Constantes.COLOR_OK);
         t1 = new Thread(new Runnable() {
             @Override
             public void run() {
+                //Obtenemos datos de los campos de texto
                 String usuario = inputUsuario.getText();
                 String contrasena = inputContrasena.getText();
                 String puerto = inputPuerto.getText();
                 String db = inputDB.getText();
+                
+                //Conexion
                 Conexion.propiedades = new ConexionProps(usuario, contrasena, puerto, db);
                 Conexion con = new Conexion();
-                con.serializarProps();
                 Conexion.conectar();
+                
+                mensajeTimer.stop();
+                
                 if (Conexion.con != null) {
+                    //Mensaje de exito
+                    jLabel1.setForeground(Constantes.COLOR_SUCCESS);
+                    jLabel1.setText("Conexion exitosa");
+                    
+                    //Guardamos las props en archivo
+                    con.serializarProps();
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SolicitarDBProps.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    //Desconectar de la bd
                     Conexion.desconectar();
+                    
+                    //Cerrrar esta ventana
                     Cerrar();
+                }else{
+                    
+                    //Mensaje de error
+                    jLabel1.setForeground(Constantes.COLOR_ERROR);
+                    jLabel1.setText("Error conectando");
                 }
+                
+                //Activar boton guardar
+                btnGuardar.setEnabled(true);
             }
         });
         t1.start();
@@ -283,6 +339,10 @@ public class SolicitarDBProps extends javax.swing.JDialog {
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -306,6 +366,7 @@ public class SolicitarDBProps extends javax.swing.JDialog {
     private javax.swing.JTextField inputDB;
     private javax.swing.JTextField inputPuerto;
     private javax.swing.JTextField inputUsuario;
+    public javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

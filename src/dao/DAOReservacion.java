@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import modelos.Reservacion;
-import utiles.Conexion;
+import conexion.Conexion;
 
 /**
  *

@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import jiconfont.swing.IconFontSwing;
 import recursos.iconos.GoogleMaterialDesignIcons;
-import utiles.Conexion;
+import conexion.Conexion;
 import utiles.Constantes;
 
 /**

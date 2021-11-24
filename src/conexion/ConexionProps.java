@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utiles;
+package conexion;
 
 import java.io.Serializable;
 
@@ -59,7 +59,4 @@ public class ConexionProps implements Serializable{
     public void setDb(String db) {
         this.db = db;
     }
-    
-    
-    
 }
